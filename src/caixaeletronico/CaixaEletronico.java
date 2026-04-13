@@ -52,22 +52,62 @@ public class CaixaEletronico implements ICaixaEletronico {
 	}
 
 	public String reposicaoCedulas(Integer cedula, Integer quantidade) {
-		String resposta = "";
-//logica de fazer a reposicao de cedulas e criar uma mensagem //(resposta)ao usuario
-		return resposta;
+
+	int linha = buscarLinhaCedula(cedula);
+
+	if (linha == -1) {
+		return "Cédula inválida!";
 	}
+
+	cedulas[linha][COLUNA_QUANTIDADE] += quantidade;
+
+	return "Reposição realizada com sucesso!";
+}
+
 
 	public String sacar(Integer valor) {
-		String resposta = "";
-//logica de sacar do caixa eletronico e criar um mensagem(resposta) ao // usuario
-		return resposta;
+
+	if (valor <= 0) {
+		return "Valor inválido!";
 	}
 
-	public String armazenaCotaMinima(Integer minimo) {
-		String resposta = "";
-//logica de armazenar a cota minima para saque e criar um //mensagem(resposta)ao usuario
-		return resposta;
+	if (valor > calcularTotalCaixa()) {
+		return "Saldo insuficiente!";
 	}
+
+	int restante = valor;
+
+	for (int i = 0; i < cedulas.length; i++) {
+
+		int valorCedula = cedulas[i][COLUNA_VALOR];
+		int quantidadeDisponivel = cedulas[i][COLUNA_QUANTIDADE];
+
+		int qtdNecessaria = restante / valorCedula;
+
+		if (qtdNecessaria > quantidadeDisponivel) {
+			qtdNecessaria = quantidadeDisponivel;
+		}
+
+		cedulas[i][COLUNA_QUANTIDADE] -= qtdNecessaria;
+		restante -= qtdNecessaria * valorCedula;
+	}
+
+	if (restante != 0) {
+		return "Não é possível sacar esse valor.";
+	}
+
+	return "Saque realizado com sucesso!";
+}
+	public String armazenaCotaMinima(Integer minimo) {
+
+	if (minimo < 0) {
+		return "Valor inválido!";
+	}
+
+	this.cotaMinima = minimo;
+
+	return "Cota mínima definida com sucesso!";
+}
 
 	// MÉTODOS AUXILIARES
 
