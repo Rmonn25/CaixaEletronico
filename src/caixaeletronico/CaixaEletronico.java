@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CaixaEletronico implements ICaixaEletronico {
-	
+
 	private static final int COLUNA_VALOR = 0;
 	private static final int COLUNA_QUANTIDADE = 1;
-	
+
 	// matriz 6x1
 	// coluna 0 = valor da cédula
 	// coluna 1 = quantitade disponivel
-	
+
 	private int[][] cedulas;
-	
+
 	// armazena a cota mínima do caixa
 	private int cotaMinima;
 
@@ -25,20 +25,13 @@ public class CaixaEletronico implements ICaixaEletronico {
 
 	// construtor
 	public CaixaEletronico() {
-		cedulas = new int[][] {
-			{100, 100},
-			{50, 200},
-			{20, 300},
-			{10, 350},
-			{5, 450},
-			{2, 500}
-		};
+		cedulas = new int[][] { { 100, 100 }, { 50, 200 }, { 20, 300 }, { 10, 350 }, { 5, 450 }, { 2, 500 } };
 
 		cotaMinima = 0;
 		caixaAtivo = true;
 		historicoOperacoes = new ArrayList<String>();
 	}
-		
+
 	public String pegaRelatorioCedulas() {
 		String resposta = "";
 //logica de fazer o relatorio de cedulas
@@ -53,61 +46,73 @@ public class CaixaEletronico implements ICaixaEletronico {
 
 	public String reposicaoCedulas(Integer cedula, Integer quantidade) {
 
-	int linha = buscarLinhaCedula(cedula);
+		int linha = buscarLinhaCedula(cedula);
 
-	if (linha == -1) {
-		return "Cédula inválida!";
+		if (linha == -1) {
+			return "Cédula inválida!";
+		}
+
+		cedulas[linha][COLUNA_QUANTIDADE] += quantidade;
+
+		return "Reposição realizada com sucesso!";
 	}
-
-	cedulas[linha][COLUNA_QUANTIDADE] += quantidade;
-
-	return "Reposição realizada com sucesso!";
-}
-
 
 	public String sacar(Integer valor) {
 
-	if (valor <= 0) {
-		return "Valor inválido!";
-	}
-
-	if (valor > calcularTotalCaixa()) {
-		return "Saldo insuficiente!";
-	}
-
-	int restante = valor;
-
-	for (int i = 0; i < cedulas.length; i++) {
-
-		int valorCedula = cedulas[i][COLUNA_VALOR];
-		int quantidadeDisponivel = cedulas[i][COLUNA_QUANTIDADE];
-
-		int qtdNecessaria = restante / valorCedula;
-
-		if (qtdNecessaria > quantidadeDisponivel) {
-			qtdNecessaria = quantidadeDisponivel;
+		if (valor <= 0) {
+			return "Valor inválido!";
 		}
 
-		cedulas[i][COLUNA_QUANTIDADE] -= qtdNecessaria;
-		restante -= qtdNecessaria * valorCedula;
+		if (valor > calcularTotalCaixa()) {
+			return "Saldo insuficiente!";
+		}
+
+		int restante = valor;
+
+		for (int i = 0; i < cedulas.length; i++) {
+
+			int valorCedula = cedulas[i][COLUNA_VALOR];
+			int quantidadeDisponivel = cedulas[i][COLUNA_QUANTIDADE];
+
+			int qtdNecessaria = restante / valorCedula;
+
+			if (qtdNecessaria > quantidadeDisponivel) {
+				qtdNecessaria = quantidadeDisponivel;
+			}
+
+			cedulas[i][COLUNA_QUANTIDADE] -= qtdNecessaria;
+			restante -= qtdNecessaria * valorCedula;
+		}
+
+		if (restante != 0) {
+			return "Não é possível sacar esse valor.";
+		}
+
+		return "Saque realizado com sucesso!";
 	}
 
-	if (restante != 0) {
-		return "Não é possível sacar esse valor.";
-	}
-
-	return "Saque realizado com sucesso!";
-}
 	public String armazenaCotaMinima(Integer minimo) {
+		String resposta = "";
+		
+//logica de armazenar a cota minima para saque e criar um //mensagem(resposta)ao usuario
+		
+		if (minimo == null || minimo < 0) {
+	        resposta = "Valor de cota mínima inválido.";
+	        return resposta;
+	    }
 
-	if (minimo < 0) {
-		return "Valor inválido!";
+	    cotaMinima = minimo;
+
+	    // verifica se o caixa continua ativo após definir a nova cota
+	    caixaAtivo = !estaAbaixoDaCotaMinima();
+
+	    resposta = ("Cota mínima armazenada com sucesso: R$ " + cotaMinima);
+
+	    registrarOperacao("Cota mínima definida para R$ " + cotaMinima);
+		
+		
+		return resposta;
 	}
-
-	this.cotaMinima = minimo;
-
-	return "Cota mínima definida com sucesso!";
-}
 
 	// MÉTODOS AUXILIARES
 
