@@ -39,9 +39,11 @@ public class CaixaEletronico implements ICaixaEletronico {
 	}
 
 	public String pegaValorTotalDisponivel() {
-		String resposta = "";
+		
+		    int total = calcularTotalCaixa();
+		    return "Total disponível no caixa: R$ " + total;
+		
 //logica de pega o valor total disponivel no caixa eletronio
-		return resposta;
 	}
 
 	public String reposicaoCedulas(Integer cedula, Integer quantidade) {
