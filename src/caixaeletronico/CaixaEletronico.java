@@ -23,9 +23,14 @@ public class CaixaEletronico implements ICaixaEletronico {
 	// histórico de operações / saques
 	private List<String> historicoOperacoes;
 
-	// construtor
 	public CaixaEletronico() {
-		cedulas = new int[][] { { 100, 100 }, { 50, 200 }, { 20, 300 }, { 10, 350 }, { 5, 450 }, { 2, 500 } };
+		cedulas = new int[][] 
+			{ { 100, 100 }, 
+			{ 50, 200 }, 
+			{ 20, 300 }, 
+			{ 10, 350 }, 
+			{ 5, 450 }, 
+			{ 2, 500 } };
 
 		cotaMinima = 0;
 		caixaAtivo = true;
@@ -33,6 +38,7 @@ public class CaixaEletronico implements ICaixaEletronico {
 	}
 
 	public String pegaRelatorioCedulas() {
+
 		String resposta = "";
 //logica de fazer o relatorio de cedulas
 		return resposta;
@@ -56,10 +62,18 @@ public class CaixaEletronico implements ICaixaEletronico {
 
 		cedulas[linha][COLUNA_QUANTIDADE] += quantidade;
 
-		return "Reposição realizada com sucesso!";
+
+		StringBuilder sb = new StringBuilder("--- Relatório de Cédulas ---\n");
+		for (int i = 0; i < cedulas.length; i++) {
+			sb.append("R$ ").append(cedulas[i][COLUNA_VALOR])
+					.append(": ").append(cedulas[i][COLUNA_QUANTIDADE]).append(" unidades\n");
+		}
+		return sb.toString();
 	}
 
+
 	public String sacar(Integer valor) {
+
 
 		if (valor <= 0) {
 			return "Valor inválido!";
@@ -76,6 +90,16 @@ public class CaixaEletronico implements ICaixaEletronico {
 			int valorCedula = cedulas[i][COLUNA_VALOR];
 			int quantidadeDisponivel = cedulas[i][COLUNA_QUANTIDADE];
 
+		if (valor <= 0) {
+			return "Valor inválido!";
+		}
+		if (valor > calcularTotalCaixa()) {
+			return "Saldo insuficiente!";
+		}
+		int restante = valor;
+		for (int i = 0; i < cedulas.length; i++) {
+			int valorCedula = cedulas[i][COLUNA_VALOR];
+			int quantidadeDisponivel = cedulas[i][COLUNA_QUANTIDADE];
 			int qtdNecessaria = restante / valorCedula;
 
 			if (qtdNecessaria > quantidadeDisponivel) {
@@ -87,7 +111,12 @@ public class CaixaEletronico implements ICaixaEletronico {
 		}
 
 		if (restante != 0) {
+
 			return "Não é possível sacar esse valor.";
+		}
+
+
+			return "Não é possível sacar esse valor com as notas disponíveis.";
 		}
 
 		return "Saque realizado com sucesso!";
@@ -95,6 +124,7 @@ public class CaixaEletronico implements ICaixaEletronico {
 
 	public String armazenaCotaMinima(Integer minimo) {
 		String resposta = "";
+
 		
 //logica de armazenar a cota minima para saque e criar um //mensagem(resposta)ao usuario
 		
@@ -113,12 +143,25 @@ public class CaixaEletronico implements ICaixaEletronico {
 	    registrarOperacao("Cota mínima definida para R$ " + cotaMinima);
 		
 		
+
+		if (minimo == null || minimo < 0) {
+			resposta = "Valor de cota mínima inválido.";
+			return resposta;
+		}
+		cotaMinima = minimo;
+		caixaAtivo = !estaAbaixoDaCotaMinima();
+		resposta = ("Cota mínima armazenada com sucesso: R$ " + cotaMinima);
+		registrarOperacao("Cota mínima definida para R$ " + cotaMinima);
+
+
 		return resposta;
 	}
 
 	// MÉTODOS AUXILIARES
 
+
 	// procura em qual linha da matriz está a cédula informada
+
 	private int buscarLinhaCedula(int valorCedula) {
 		for (int i = 0; i < cedulas.length; i++) {
 			if (cedulas[i][COLUNA_VALOR] == valorCedula) {
@@ -127,6 +170,7 @@ public class CaixaEletronico implements ICaixaEletronico {
 		}
 		return -1;
 	}
+
 
 	// calcula o valor total disponível no caixa
 	private int calcularTotalCaixa() {
@@ -140,11 +184,14 @@ public class CaixaEletronico implements ICaixaEletronico {
 	}
 
 	// verifica se o caixa ficou abaixo da cota mínima
+
 	private boolean estaAbaixoDaCotaMinima() {
 		return calcularTotalCaixa() < cotaMinima;
 	}
 
+
 	// registra operação no histórico
+
 	private void registrarOperacao(String operacao) {
 		historicoOperacoes.add(operacao);
 	}
@@ -156,12 +203,12 @@ public class CaixaEletronico implements ICaixaEletronico {
 		for (String operacao : historicoOperacoes) {
 			sb.append(operacao).append("\n");
 		}
-
-		return sb.toString();
 	}
 
-	public static void main(String arg[]) {
-		GUI janela = new GUI(CaixaEletronico.class);
+	public static void main(String[] args) {
+		ICaixaEletronico minhaLogica = new CaixaEletronico();
+		GUI janela = new GUI(minhaLogica);
 		janela.show();
 	}
 }
+
