@@ -38,11 +38,16 @@ public class CaixaEletronico implements ICaixaEletronico {
 	}
 
 	public String pegaRelatorioCedulas() {
+    String resposta = "";
 
-		String resposta = "";
-//logica de fazer o relatorio de cedulas
-		return resposta;
-	}
+    for (int i = 0; i < cedulas.length; i++) {
+        int valor = cedulas[i][COLUNA_VALOR];
+        int quantidade = cedulas[i][COLUNA_QUANTIDADE];
+        resposta += valor + " → " + quantidade + "\n";
+    }
+
+    return resposta;
+}
 
 	public String pegaValorTotalDisponivel() {
 		
