@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class GUI {
-
+	
 	private JFrame janela;
 	private ICaixaEletronico caixa; // 1. Recebe a interface
 
@@ -117,10 +117,20 @@ public class GUI {
 		JButton btnSair = new JButton("Sair");
 		btnSair.setBounds(75, 315, 200, 30);
 		janela.add(btnSair);
-		btnSair.addActionListener(e -> System.exit(0));
-	}
+		
+		btnSair.addActionListener(e -> {
+		    JOptionPane.showMessageDialog(
+		        janela,
+		        caixa.montarHistorico(),
+		        "Extrato final",
+		        JOptionPane.INFORMATION_MESSAGE
+		    );
 
+		    System.exit(0);
+		});
+	}
 	public void show() {
 		janela.setVisible(true);
 	}
 }
+	
