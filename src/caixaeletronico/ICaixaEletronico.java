@@ -35,8 +35,17 @@ public interface ICaixaEletronico {
 	* @retorna uma string formatada informando o resultado da operacao
 	*/
 	public String armazenaCotaMinima(Integer minimo);
-
+	/**
+	 * Efetua a leitura e armazena a cota mínima de atendimento do caixa.
+	 * @param minimo valor mínimo permitido para funcionamento do caixa
+	 * @retorna uma string formatada informando o resultado da operação
+	 */
 	public String montarHistorico();
+	/**
+	 * Monta e retorna o extrato com histórico de saques, reposições
+	 * e saldo atualizado do caixa eletrônico.
+	 * @retorna uma string formatada contendo o histórico das operações
+	 */
 	
 }
 

@@ -2,8 +2,6 @@ package caixaeletronico;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -11,15 +9,13 @@ public class CaixaEletronico implements ICaixaEletronico {
 
 	private static final int COLUNA_VALOR = 0;
 	private static final int COLUNA_QUANTIDADE = 1;
-	
-	
+
 	private ArrayList<String> historicoSaques = new ArrayList<>();
 	private ArrayList<String> historicoReposicoes = new ArrayList<>();
 
 	// matriz 6x1
 	// coluna 0 = valor da cédula
 	// coluna 1 = quantitade disponivel
-
 	private int[][] cedulas;
 
 	// armazena a cota mínima do caixa
@@ -28,21 +24,17 @@ public class CaixaEletronico implements ICaixaEletronico {
 	// controla se o caixa ainda pode atender
 	private boolean caixaAtivo;
 
-	// histórico de operações / saques
-	private List<String> historicoOperacoes;
-
 	public CaixaEletronico() {
 		cedulas = new int[][] 
-			{ { 100, 100 }, 
-			{ 50, 200 }, 
-			{ 20, 300 }, 
-			{ 10, 350 }, 
-			{ 5, 450 }, 
-			{ 2, 500 } };
+				  { { 100, 100 }, 
+					{ 50, 200 }, 
+					{ 20, 300 }, 
+					{ 10, 350 }, 
+					{ 5, 450 }, 
+					{ 2, 500 } };
 
 		cotaMinima = 0;
 		caixaAtivo = true;
-		historicoOperacoes = new ArrayList<String>();
 	}
 
 	public String pegaRelatorioCedulas() {
@@ -62,11 +54,11 @@ public class CaixaEletronico implements ICaixaEletronico {
 	public String pegaValorTotalDisponivel() {
 
 		int total = calcularTotalCaixa();
-		
+
 		DecimalFormat formatacao = new DecimalFormat("#,###");
 		return "Total disponível no caixa: R$ " + formatacao.format(total);
 
-//logica de pega o valor total disponivel no caixa eletronio
+		//logica de pega o valor total disponivel no caixa eletronio
 	}
 
 	public String reposicaoCedulas(Integer cedula, Integer quantidade) {
@@ -79,117 +71,133 @@ public class CaixaEletronico implements ICaixaEletronico {
 
 		cedulas[linha][COLUNA_QUANTIDADE] += quantidade;
 
-		StringBuilder sb = new StringBuilder("--- Relatório de Cédulas ---\n");
+		// Depois da reposição, verifica se o caixa voltou a ficar ativo
+		caixaAtivo = !estaAbaixoDaCotaMinima();
+
+		StringBuilder sb = new StringBuilder("=== RELATÓRIO DE CÉDULAS ===\n");
 		for (int i = 0; i < cedulas.length; i++) {
 			sb.append("R$ ").append(cedulas[i][COLUNA_VALOR]).append(": ").append(cedulas[i][COLUNA_QUANTIDADE])
 					.append(" unidades\n");
 		}
-		
-		DateTimeFormatter DataHoraExtrato = DateTimeFormatter.ofPattern("dd/mm/yyyy - hh:mm:ss");
+
+		DateTimeFormatter DataHoraExtrato = DateTimeFormatter.ofPattern("dd/mm/yyyy - HH:mm:ss");
 		String DataHora = LocalDateTime.now().format(DataHoraExtrato);
-				
-		historicoReposicoes.add(DataHora +"| Reposição: " + quantidade + " notas de R$ " + cedula);
-		
+
+		historicoReposicoes.add(DataHora + "| Reposição: " + quantidade + " notas de R$ " + cedula);
+
 		return sb.toString();
 	}
 
 	public String sacar(Integer valor) {
 
-			if (valor <= 0 || valor == null) {
-				return "Valor inválido!";
-			}
-			
-			if (valor > calcularTotalCaixa()) {
-				return "Saldo insuficiente!";
-			}
-			
-			// Guarda quanto ainda falta para sacar
-			int restante = valor;	
-			
-			int totalCedulas = 0;
-			
-			int[] cedulasUsadas = new int[cedulas.length];
-			
-			
-			for (int i = 0; i < cedulas.length; i++) {
-				int valorCedula = cedulas[i][COLUNA_VALOR];
-				int quantidadeDisponivel = cedulas[i][COLUNA_QUANTIDADE];
-				int qtdNecessaria = restante / valorCedula;
+		// Primeiro valida se o valor é nulo ou inválido
+		if (valor == null || valor <= 0) {
+			return "Valor inválido!";
+		}
 
-				if (qtdNecessaria > quantidadeDisponivel) {
-					qtdNecessaria = quantidadeDisponivel;
+		// Verifica se o caixa já está bloqueado ou abaixo da cota mínima
+		if (!caixaAtivo && estaAbaixoDaCotaMinima()) {
+			return "Caixa Vazio: Chame o Operador";
+		}
+
+		// Verifica se existe dinheiro suficiente no caixa
+		if (valor > calcularTotalCaixa()) {
+			return "Saldo insuficiente!";
+		}
+
+		// Guarda quanto ainda falta sacar
+		int restante = valor;
+
+		// Conta o total de cédulas que seriam emitidas
+		int totalCedulas = 0;
+
+		// Guarda quantas cédulas de cada valor serão usadas
+		int[] cedulasUsadas = new int[cedulas.length];
+
+		// Simula o saque usando as maiores notas primeiro
+		for (int i = 0; i < cedulas.length; i++) {
+
+			int valorCedula = cedulas[i][COLUNA_VALOR];
+			int quantidadeDisponivel = cedulas[i][COLUNA_QUANTIDADE];
+
+			int qtdNecessaria = restante / valorCedula;
+
+			if (qtdNecessaria > quantidadeDisponivel) {
+				qtdNecessaria = quantidadeDisponivel;
+			}
+
+			// Se for nota de 5 e o uso dela deixar resto 1,
+			// reduz uma nota de 5 para permitir completar com notas de 2
+			if (valorCedula == 5 && qtdNecessaria > 0) {
+				int restoDepoisDaNota5 = restante - (qtdNecessaria * valorCedula);
+
+				if (restoDepoisDaNota5 % 2 != 0) {
+					qtdNecessaria--;
 				}
-
-				cedulasUsadas[i] = qtdNecessaria;
-				restante -= qtdNecessaria * valorCedula;
-				totalCedulas += qtdNecessaria;
 			}
 
-			if (restante != 0) {
-				return "Saque não será realizado por falta de cédulas.";
-			}
+			cedulasUsadas[i] = qtdNecessaria;
+			restante -= qtdNecessaria * valorCedula;
+			totalCedulas += qtdNecessaria;
+		}
 
-			if (totalCedulas > 30) {
-				return "Saque não será realizado porque foi atingido o limite máximo de 30 cédulas.";
-			}
-		
+		// Se não conseguiu formar o valor com as cédulas disponíveis
+		if (restante != 0) {
+			return "Saque não realizado por falta de cédulas";
+		}
+
+		// Se passou de 30 cédulas, não pode sacar
+		if (totalCedulas > 30) {
+			return "Saque não realizado. Limite máximo de 30 cédulas excedido.";
+		}
+
+		// Verifica se depois do saque o caixa ficaria abaixo da cota mínima
+		if (calcularTotalCaixa() - valor < cotaMinima) {
+			caixaAtivo = false;
+			return "Caixa Vazio: Chame o Operador";
+		}
+
+		// Só agora atualiza a matriz, porque o saque foi aprovado
 		for (int i = 0; i < cedulas.length; i++) {
 			cedulas[i][COLUNA_QUANTIDADE] -= cedulasUsadas[i];
 		}
-		
-		String resultado = "Saque realizado com sucesso! \n\nCédulas emitidas:\n";
-		
+
+		// Monta a mensagem do saque
+		String resultado = "Saque realizado com sucesso!\n\nCédulas emitidas:\n";
+
 		for (int i = 0; i < cedulas.length; i++) {
 			if (cedulasUsadas[i] > 0) {
-				resultado +=  "R$ " + cedulas[i][COLUNA_VALOR] + ": " + cedulasUsadas[i] + " cédula(s)\n";
+				resultado += "R$ " + cedulas[i][COLUNA_VALOR] + ": " + cedulasUsadas[i] + " cédula(s)\n";
 			}
 		}
-		
-		// pegag a data e a hora dos saques.
-		DateTimeFormatter DataHoraExtrato = DateTimeFormatter.ofPattern("dd/mm/yyyy - hh:mm:ss");
-				
+
+		// Registra o saque no histórico com data e hora
+		DateTimeFormatter DataHoraExtrato = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss");
+
 		String DataHora = LocalDateTime.now().format(DataHoraExtrato);
-				
-		historicoSaques.add(DataHora + " | -R$ "+ valor);
-		
-		return resultado;		
-		
-}
-	
 
+		historicoSaques.add(DataHora + " | -R$ " + valor);
+
+		return resultado;
+	}
+
+	//logica de armazenar a cota minima para saque e criar um //mensagem(resposta)ao usuario	
 	public String armazenaCotaMinima(Integer minimo) {
-		String resposta = "";
-
-		
-//logica de armazenar a cota minima para saque e criar um //mensagem(resposta)ao usuario
-		
-		if (minimo == null || minimo < 0) {
-	        resposta = "Valor de cota mínima inválido.";
-	        return resposta;
-	    }
-
-	    cotaMinima = minimo;
-
-	    // verifica se o caixa continua ativo após definir a nova cota
-	    caixaAtivo = !estaAbaixoDaCotaMinima();
-
-	    resposta = ("Cota mínima armazenada com sucesso: R$ " + cotaMinima);
-
-	    registrarOperacao("Cota mínima definida para R$ " + cotaMinima);
-		
-		
 
 		if (minimo == null || minimo < 0) {
-			resposta = "Valor de cota mínima inválido.";
-			return resposta;
+			return "Valor de cota mínima inválido.";
 		}
+
 		cotaMinima = minimo;
-		caixaAtivo = !estaAbaixoDaCotaMinima();
-		resposta = ("Cota mínima armazenada com sucesso: R$ " + cotaMinima);
-		registrarOperacao("Cota mínima definida para R$ " + cotaMinima);
 
+		if (estaAbaixoDaCotaMinima()) {
+			caixaAtivo = false;
+			return "Cota mínima armazenada com sucesso: R$ " + cotaMinima + "\nCaixa Vazio: Chame o Operador";
+		}
 
-		return resposta;
+		caixaAtivo = true;
+
+		return "Cota mínima armazenada com sucesso: R$ " + cotaMinima;
 	}
 
 	// MÉTODOS AUXILIARES
@@ -217,42 +225,35 @@ public class CaixaEletronico implements ICaixaEletronico {
 	}
 
 	// verifica se o caixa ficou abaixo da cota mínima
-
 	private boolean estaAbaixoDaCotaMinima() {
 		return calcularTotalCaixa() < cotaMinima;
-	}
-
-	// registra operação no histórico
-
-	private void registrarOperacao(String operacao) {
-		historicoOperacoes.add(operacao);
 	}
 
 	// monta o histórico em texto
 	public String montarHistorico() {
 		StringBuilder sb = new StringBuilder();
-		
-		 sb.append("==== EXTRATO DO CAIXA ====\n\n");
 
-		    sb.append("========= SAQUES =========\n");
-		    for (String saque : historicoSaques) {
-		        sb.append(saque).append("\n");
-		    }
+		sb.append("==== EXTRATO DO CAIXA ====\n\n");
 
-		    sb.append("\n========= REPOSIÇÃO =========\n");
-		    for (String reposicao : historicoReposicoes) {
-		        sb.append(reposicao).append("\n");
-		    }
-		
+		sb.append("========= SAQUES =========\n");
+		for (String saque : historicoSaques) {
+			sb.append(saque).append("\n");
+		}
+
+		sb.append("\n========= REPOSIÇÃO =========\n");
+		for (String reposicao : historicoReposicoes) {
+			sb.append(reposicao).append("\n");
+		}
+
 		sb.append("\nSaldo atualizado: ");
 		sb.append(pegaValorTotalDisponivel());
-		
+
 		return sb.toString();
 	}
-
+	
 	public static void main(String[] args) {
-		ICaixaEletronico minhaLogica = new CaixaEletronico();
-		GUI janela = new GUI(minhaLogica);
+		ICaixaEletronico caixa = new CaixaEletronico();
+		GUI janela = new GUI(caixa);
 		janela.show();
 	}
 }

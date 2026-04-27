@@ -1,5 +1,6 @@
 package caixaeletronico;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -8,15 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class GUI {
-	
-	private JFrame janela;
-	private ICaixaEletronico caixa; // 1. Recebe a interface
 
+	private JFrame janela;
 	// 2. Construtor alterado para receber a lógica pronta
 	public GUI(ICaixaEletronico caixa) {
 
-		this.caixa = caixa;
 		janela = new JFrame();
+		
+		ImageIcon icon = new ImageIcon(getClass().getResource("/imagens/bradesco.png"));
+		janela.setIconImage(icon.getImage());
 
 		janela.setTitle("Caixa eletronico");
 		janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -57,23 +58,20 @@ public class GUI {
 		JButton pegaRelatorioCedulas = new JButton("Relátorio de Cedulas");
 		pegaRelatorioCedulas.setBounds(75, 110, 200, 30);
 		janela.add(pegaRelatorioCedulas);
-		pegaRelatorioCedulas.addActionListener(e ->
-				JOptionPane.showMessageDialog(null, caixa.pegaRelatorioCedulas())
-		);
+		pegaRelatorioCedulas.addActionListener(e -> JOptionPane.showMessageDialog(null, caixa.pegaRelatorioCedulas()));
 
 		// Botão Valor Total
 		JButton pegaValorTotalDisponivel = new JButton("Valor total disponivel");
 		pegaValorTotalDisponivel.setBounds(75, 150, 200, 30);
 		janela.add(pegaValorTotalDisponivel);
-		pegaValorTotalDisponivel.addActionListener(e ->
-				JOptionPane.showMessageDialog(null, caixa.pegaValorTotalDisponivel())
-		);
+		pegaValorTotalDisponivel
+				.addActionListener(e -> JOptionPane.showMessageDialog(null, caixa.pegaValorTotalDisponivel()));
 
 		// Botão Reposição
 		JButton reposicaoCedulas = new JButton("Reposição de Cedulas");
 		reposicaoCedulas.setBounds(75, 190, 200, 30);
 		janela.add(reposicaoCedulas);
-		reposicaoCedulas.addActionListener(new ActionListener(){
+		reposicaoCedulas.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String cedulaStr = JOptionPane.showInputDialog("Valor da nota (Ex: 50):");
@@ -117,20 +115,15 @@ public class GUI {
 		JButton btnSair = new JButton("Sair");
 		btnSair.setBounds(75, 315, 200, 30);
 		janela.add(btnSair);
-		
-		btnSair.addActionListener(e -> {
-		    JOptionPane.showMessageDialog(
-		        janela,
-		        caixa.montarHistorico(),
-		        "Extrato final",
-		        JOptionPane.INFORMATION_MESSAGE
-		    );
 
-		    System.exit(0);
+		btnSair.addActionListener(e -> {
+			JOptionPane.showMessageDialog(janela, caixa.montarHistorico(), "Extrato final",
+					JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
 		});
 	}
+	
 	public void show() {
 		janela.setVisible(true);
 	}
 }
-	
