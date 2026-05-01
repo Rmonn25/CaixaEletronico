@@ -43,12 +43,11 @@ public class GUI {
 						String resultado = caixa.sacar(Integer.parseInt(input));
 						JOptionPane.showMessageDialog(null, resultado);
 					} catch (NumberFormatException ex) {
-						JOptionPane.showMessageDialog(null, "Digite apenas números!");
+						JOptionPane.showMessageDialog(null, "Voce digitou um valor invalido, por favor digite um valor valido");
 					}
 				}
 			}
 		});
-
 		// Módulo do administrador
 		JLabel labelModuloAdm = new JLabel("Modulo do Administrador:");
 		labelModuloAdm.setBounds(75, 75, 180, 30);
@@ -86,7 +85,6 @@ public class GUI {
 				}
 			}
 		});
-
 		// Botão Cota Mínima
 		JButton armazenaCotaMinima = new JButton("Cota Minima");
 		armazenaCotaMinima.setBounds(75, 230, 200, 30);
@@ -105,7 +103,6 @@ public class GUI {
 				}
 			}
 		});
-
 		// Módulo de ambos
 		JLabel labelModuloAmbos = new JLabel("Modulo de Ambos:");
 		labelModuloAmbos.setBounds(75, 280, 150, 30);
@@ -122,7 +119,6 @@ public class GUI {
 			System.exit(0);
 		});
 	}
-	
 	public void show() {
 		janela.setVisible(true);
 	}
