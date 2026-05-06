@@ -39,7 +39,7 @@ java -jar CaixaEletronico.jar
 git clone https://github.com/Rmonn25/CaixaEletronico.git
 cd CaixaEletronico
 ```
-Abra o projeto na sua IDE e execute a classe principal (`Main`).
+Abra o projeto na sua IDE e execute a classe principal (`CaixaEletronico.java`).
 
 ## 📁 Estrutura do Projeto
 
